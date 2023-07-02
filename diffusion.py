@@ -13,7 +13,7 @@ variance=(1-alphas)*(1-alphas_cumprod_prev)/(1-alphas_cumprod)  # denoise用的�
 # 执行前向加噪
 def forward_diffusion(batch_x,batch_t): # batch_x: (batch,channel,width,height), batch_t: (batch_size,)
     batch_noise=torch.randn_like(batch_x).to(DEVICE)   # 为每张图片生成第t步的高斯噪音   (batch,channel,width,height)
-    batch_alphas_cumprod=torch.gather(input=alphas_cumprod.to(DEVICE),dim=-1,index=batch_t).view(batch_x.size(0),1,1,1)    # 为每张图片生成t时刻aplpha累乘,形状(batch_size,1,1,1)用于广播到每个像素
+    batch_alphas_cumprod=alphas_cumprod.to(DEVICE)[batch_t].view(batch_x.size(0),1,1,1) 
     batch_x_t=torch.sqrt(batch_alphas_cumprod)*batch_x+torch.sqrt(1-batch_alphas_cumprod)*batch_noise # 基于公式直接生成第t步加噪后图片
     return batch_x_t,batch_noise
 
