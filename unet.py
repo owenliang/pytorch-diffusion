@@ -5,9 +5,10 @@ from unet_enc_block import EncoderBlock
 from unet_dec_blcok import DecoderBlock
 from config import * 
 from diffusion import forward_diffusion
+from time_position_emb import TimePositionEmbedding
 
 class UNet(nn.Module):
-    def __init__(self,img_channel,channels=[64, 128, 256, 512, 1024]):
+    def __init__(self,img_channel,channels=[64, 128, 256, 512, 1024],time_emb_size=32):
         super().__init__()
 
         channels=[img_channel]+channels
@@ -15,22 +16,30 @@ class UNet(nn.Module):
         # 每个encoder block增加1倍channel，减少1倍尺寸
         self.enc_blocks=nn.ModuleList()
         for i in range(len(channels)-1):
-            self.enc_blocks.append(EncoderBlock(channels[i],channels[i+1]))
+            self.enc_blocks.append(EncoderBlock(channels[i],channels[i+1],time_emb_size))
         
         # 每个decoder block减少1倍channel，增加1倍尺寸
         self.dec_blocks=nn.ModuleList()
         for i in range(len(channels)-1):
-            self.dec_blocks.append(DecoderBlock(channels[-i-1]*2,channels[-i-2])) # 有残差结构,所以channal输入翻倍
+            self.dec_blocks.append(DecoderBlock(channels[-i-1]*2,channels[-i-2],time_emb_size)) # 有残差结构,所以channal输入翻倍
+
+        # time转embedding
+        self.time_emb=TimePositionEmbedding(time_emb_size)
         
     def forward(self,x,t):
-        # TODO: t embedding
+        # time做embedding
+        t_emb=self.time_emb(t)
+        
+        # encoder加channel减尺寸
         residual=[]
         for enc_block in self.enc_blocks:
-            x=enc_block(x)
+            x=enc_block(x,t_emb)
             residual.append(x)
+        
+        # decoder减channel加尺寸,将encoder输出堆叠到channel上
         for dec_block in self.dec_blocks:
             residual_x=residual.pop(-1)
-            x=dec_block(torch.cat((residual_x,x),dim=1))    # 残差用于纵深channel维
+            x=dec_block(torch.cat((residual_x,x),dim=1),t_emb)    # 残差用于纵深channel维
         return x
         
 if __name__=='__main__':
