@@ -24,7 +24,11 @@ class UNet(nn.Module):
             self.dec_blocks.append(DecoderBlock(channels[-i-1]*2,channels[-i-2],time_emb_size)) # 有残差结构,所以channal输入翻倍
 
         # time转embedding
-        self.time_emb=TimePositionEmbedding(time_emb_size)
+        self.time_emb=nn.Sequential(
+            TimePositionEmbedding(time_emb_size),
+            nn.Linear(time_emb_size,time_emb_size),
+            nn.ReLU(),
+        )
         
     def forward(self,x,t):
         # time做embedding
@@ -51,6 +55,6 @@ if __name__=='__main__':
     print('batch_x_t:',batch_x_t.size())
     print('batch_noise_t:',batch_noise_t.size())
 
-    unet=UNet(batch_x_t.size(1))
+    unet=UNet(batch_x_t.size(1)).to(DEVICE)
     batch_predict_noise_t=unet(batch_x_t,batch_t)
     print('batch_predict_noise_t:',batch_predict_noise_t.size())

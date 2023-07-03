@@ -34,18 +34,18 @@ class EncoderBlock(nn.Module):
 if __name__=='__main__':
     # 图像x_t
     img=train_dataset[0][0]
-    batch_x=img.unsqueeze(0)
+    batch_x=img.unsqueeze(0).to(DEVICE)
     
     # 时间步time
     batch_t=torch.randint(0,T,size=(batch_x.size(0),)).to(DEVICE)  
     
     # time转embedding
     time_emb_size=32
-    time_emb=TimePositionEmbedding(time_emb_size)
+    time_emb=TimePositionEmbedding(time_emb_size).to(DEVICE)
     batch_t_emb=time_emb(batch_t)
     
     # 编码
-    encoder_block=EncoderBlock(1,64,time_emb_size)
+    encoder_block=EncoderBlock(1,64,time_emb_size).to(DEVICE)
     batch_z=encoder_block(batch_x,batch_t_emb)
     print('batch_x:',batch_x.size())
     print('batch_z:',batch_z.size())

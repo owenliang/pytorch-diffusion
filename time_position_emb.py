@@ -18,7 +18,7 @@ class TimePositionEmbedding(nn.Module):
         return embs_t
     
 if __name__=='__main__':
-    time_pos_emb=TimePositionEmbedding(8)
-    t=torch.randint(0,T,(2,))   # 随机2个图片的time时刻
+    time_pos_emb=TimePositionEmbedding(8).to(DEVICE)
+    t=torch.randint(0,T,(2,)).to(DEVICE)   # 随机2个图片的time时刻
     embs_t=time_pos_emb(t) 
     print(embs_t)
