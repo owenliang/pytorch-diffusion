@@ -8,7 +8,7 @@ from torch import nn
 import os 
 
 EPOCH=10
-BATCH_SIZE=350
+BATCH_SIZE=250
 
 dataloader=DataLoader(train_dataset,batch_size=BATCH_SIZE,num_workers=4,persistent_workers=True,shuffle=True)   # 数据加载器
 
@@ -18,7 +18,7 @@ except:
     model=UNet(1).to(DEVICE)   # 噪音预测模型
 
 optimizer=torch.optim.Adam(model.parameters(),lr=0.001) # 优化器
-loss_fn=nn.L1Loss()
+loss_fn=nn.L1Loss() # 损失函数(绝对值误差均值)
 
 if __name__=='__main__':
     for epoch in range(EPOCH):

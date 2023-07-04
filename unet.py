@@ -11,7 +11,8 @@ class UNet(nn.Module):
     def __init__(self,img_channel,channels=[64, 128, 256, 512, 1024],time_emb_size=32):
         super().__init__()
 
-        channels=[img_channel]+channels
+        # 初始化通道数,尺寸不变
+        self.conv=nn.Conv2d(img_channel,channels[0],kernel_size=3,stride=1,padding=1)
 
         # 每个encoder block增加1倍channel，减少1倍尺寸
         self.enc_blocks=nn.ModuleList()
@@ -29,8 +30,14 @@ class UNet(nn.Module):
             nn.Linear(time_emb_size,time_emb_size),
             nn.ReLU(),
         )
+
+        # 还原通道数,尺寸不变
+        self.output=nn.Conv2d(channels[0],img_channel,kernel_size=1,stride=1,padding=0)
         
     def forward(self,x,t):
+        # 初始化通道数
+        x=self.conv(x)
+
         # time做embedding
         t_emb=self.time_emb(t)
         
@@ -44,7 +51,7 @@ class UNet(nn.Module):
         for dec_block in self.dec_blocks:
             residual_x=residual.pop(-1)
             x=dec_block(torch.cat((residual_x,x),dim=1),t_emb)    # 残差用于纵深channel维
-        return x
+        return self.output(x) # 还原通道数
         
 if __name__=='__main__':
     batch_x=torch.stack((train_dataset[0][0],train_dataset[1][0]),dim=0).to(DEVICE) # 2个图片拼batch, (2,1,96,96)
