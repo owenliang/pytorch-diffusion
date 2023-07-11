@@ -44,7 +44,7 @@ if __name__=='__main__':
     # 加载模型
     model=torch.load('model.pt')
     # 生成噪音图
-    batch_size=5
+    batch_size=10
     batch_x_t=torch.randn(size=(batch_size,1,IMG_SIZE,IMG_SIZE))  # (5,1,96,96)
     # 逐步去噪得到原图
     steps=backward_denoise(model,batch_x_t)
