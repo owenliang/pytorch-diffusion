@@ -7,7 +7,7 @@ import torch
 from torch import nn 
 import os 
 
-EPOCH=10
+EPOCH=20
 BATCH_SIZE=250
 
 dataloader=DataLoader(train_dataset,batch_size=BATCH_SIZE,num_workers=4,persistent_workers=True,shuffle=True)   # 数据加载器
@@ -21,6 +21,7 @@ optimizer=torch.optim.Adam(model.parameters(),lr=0.001) # 优化器
 loss_fn=nn.L1Loss() # 损失函数(绝对值误差均值)
 
 if __name__=='__main__':
+    model.train()
     for epoch in range(EPOCH):
         last_loss=0
         for batch_x,_ in dataloader:

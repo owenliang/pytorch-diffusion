@@ -26,5 +26,6 @@ if __name__=='__main__':
 
     # 转回pil图像绘制
     plt.figure(figsize=(5,5))
-    plt.imshow(tensor_to_pil(img_tensor))
+    pil_img=tensor_to_pil(img_tensor)
+    plt.imshow(pil_img)
     plt.show()
