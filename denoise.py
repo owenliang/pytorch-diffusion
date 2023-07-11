@@ -36,7 +36,7 @@ def backward_denoise(model,batch_x_t):
                     torch.sqrt(variance[batch_t].view(*shape))
             else:
                 batch_x_t=batch_mean_t
-            batch_x_t=torch.clamp(batch_x_t, -1.0, 1.0)
+            batch_x_t=torch.clamp(batch_x_t, -1.0, 1.0).detach()
             steps.append(batch_x_t)
     return steps 
 
@@ -54,7 +54,7 @@ if __name__=='__main__':
     plt.figure(figsize=(15,15))
     for b in range(batch_size):
         for i in range(0,num_imgs):
-            idx=int(T/num_imgs)*i
+            idx=int(T/num_imgs)*(i+1)
             # 像素值还原到[0,1]
             final_img=(steps[idx][b].to('cpu')+1)/2
             # tesor转回PIL图
