@@ -6,7 +6,7 @@ class ConvBlock(nn.Module):
 
         self.seq1 = nn.Sequential(
             nn.Conv2d(in_channel,out_channel,kernel_size=3,stride=1,padding=1), # 改通道数,不改大小
-            nn.BatchNorm2d(out_channel,momentum=0.01),
+            nn.BatchNorm2d(out_channel),
             nn.ReLU(),
         )
 
@@ -15,7 +15,7 @@ class ConvBlock(nn.Module):
 
         self.seq2=nn.Sequential(
             nn.Conv2d(out_channel,out_channel,kernel_size=3,stride=1,padding=1), # 不改通道数,不改大小
-            nn.BatchNorm2d(out_channel,momentum=0.01),
+            nn.BatchNorm2d(out_channel),
             nn.ReLU(),
         )
 

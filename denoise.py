@@ -16,7 +16,8 @@ def backward_denoise(model,batch_x_t):
     alphas_cumprod=alphas_cumprod.to(DEVICE)
     variance=variance.to(DEVICE)
     
-    model.eval()
+    # 应该是由于BN层mean,std导致的eval效果不好,先不开启了
+    #model.eval()
     with torch.no_grad():
         for t in range(T-1,-1,-1):
             batch_t=torch.full((batch_x_t.size(0),),t).to(DEVICE)
