@@ -16,8 +16,7 @@ def backward_denoise(model,batch_x_t):
     alphas_cumprod=alphas_cumprod.to(DEVICE)
     variance=variance.to(DEVICE)
     
-    # TODO: 开eval后无法得到结果，还不知道原因
-    #model.eval()
+    model.eval()
     with torch.no_grad():
         for t in range(T-1,-1,-1):
             batch_t=torch.full((batch_x_t.size(0),),t).to(DEVICE)

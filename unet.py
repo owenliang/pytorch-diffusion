@@ -1,29 +1,17 @@
 import torch 
 from torch import nn 
 from dataset import train_dataset
-from unet_enc_block import EncoderBlock
-from unet_dec_blcok import DecoderBlock
 from config import * 
 from diffusion import forward_diffusion
 from time_position_emb import TimePositionEmbedding
+from conv_block import ConvBlock
 
 class UNet(nn.Module):
     def __init__(self,img_channel,channels=[64, 128, 256, 512, 1024],time_emb_size=32):
         super().__init__()
 
-        # 初始化通道数,尺寸不变
-        self.conv=nn.Conv2d(img_channel,channels[0],kernel_size=3,stride=1,padding=1)
-
-        # 每个encoder block增加1倍channel，减少1倍尺寸
-        self.enc_blocks=nn.ModuleList()
-        for i in range(len(channels)-1):
-            self.enc_blocks.append(EncoderBlock(channels[i],channels[i+1],time_emb_size))
+        channels=[img_channel]+channels
         
-        # 每个decoder block减少1倍channel，增加1倍尺寸
-        self.dec_blocks=nn.ModuleList()
-        for i in range(len(channels)-1):
-            self.dec_blocks.append(DecoderBlock(channels[-i-1]*2,channels[-i-2],time_emb_size)) # 有残差结构,所以channal输入翻倍
-
         # time转embedding
         self.time_emb=nn.Sequential(
             TimePositionEmbedding(time_emb_size),
@@ -31,26 +19,46 @@ class UNet(nn.Module):
             nn.ReLU(),
         )
 
+        # 每个encoder conv block增加一倍通道数
+        self.enc_convs=nn.ModuleList()
+        for i in range(len(channels)-1):
+            self.enc_convs.append(ConvBlock(channels[i],channels[i+1],time_emb_size))
+        
+        # 每个encoder conv后马上缩小一倍图像尺寸,最后一个conv后不缩小
+        self.maxpools=nn.ModuleList()
+        for i in range(len(channels)-2):
+            self.maxpools.append(nn.MaxPool2d(kernel_size=2,stride=2,padding=0))
+        
+        # 每个decoder conv前放大一倍图像尺寸，缩小一倍通道数
+        self.deconvs=nn.ModuleList()
+        for i in range(len(channels)-2):
+            self.deconvs.append(nn.ConvTranspose2d(channels[-i-1],channels[-i-2],kernel_size=2,stride=2)) # 不改通道数,尺寸翻倍
+
+        # 每个decoder conv block减少一倍通道数
+        self.dec_convs=nn.ModuleList()
+        for i in range(len(channels)-2):
+            self.dec_convs.append(ConvBlock(channels[-i-1],channels[-i-2],time_emb_size))   # 残差结构
+
         # 还原通道数,尺寸不变
-        self.output=nn.Conv2d(channels[0],img_channel,kernel_size=1,stride=1,padding=0)
+        self.output=nn.Conv2d(channels[1],img_channel,kernel_size=1,stride=1,padding=0)
         
     def forward(self,x,t):
-        # 初始化通道数
-        x=self.conv(x)
-
         # time做embedding
         t_emb=self.time_emb(t)
         
-        # encoder加channel减尺寸
+        # encoder阶段
         residual=[]
-        for enc_block in self.enc_blocks:
-            x=enc_block(x,t_emb)
-            residual.append(x)
-        
-        # decoder减channel加尺寸,将encoder输出堆叠到channel上
-        for dec_block in self.dec_blocks:
+        for i,conv in enumerate(self.enc_convs):
+            x=conv(x,t_emb)
+            if i!=len(self.enc_convs)-1:
+                residual.append(x)
+                x=self.maxpools[i](x)
+            
+        # decoder阶段
+        for i,deconv in enumerate(self.deconvs):
+            x=deconv(x)
             residual_x=residual.pop(-1)
-            x=dec_block(torch.cat((residual_x,x),dim=1),t_emb)    # 残差用于纵深channel维
+            x=self.dec_convs[i](torch.cat((residual_x,x),dim=1),t_emb)    # 残差用于纵深channel维
         return self.output(x) # 还原通道数
         
 if __name__=='__main__':
