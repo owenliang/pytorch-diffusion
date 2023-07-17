@@ -18,7 +18,7 @@ tensor_to_pil=transforms.Compose([
 ])
 
 # 数据集
-train_dataset=torchvision.datasets.FashionMNIST(root=".",train=True,download=True,transform=pil_to_tensor)
+train_dataset=torchvision.datasets.MNIST(root=".",train=True,download=True,transform=pil_to_tensor)
 
 if __name__=='__main__':
     # 训练样本的tensor
