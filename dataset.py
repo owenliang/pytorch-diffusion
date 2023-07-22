@@ -6,7 +6,6 @@ from config import *
 # PIL图像转tensor
 pil_to_tensor=transforms.Compose([
     transforms.Resize((IMG_SIZE,IMG_SIZE)),    # PIL图像尺寸统一  
-    transforms.RandomHorizontalFlip(),          # PIL图像左右随机反转
     transforms.ToTensor()                       # PIL图像转tensor, (H,W,C) ->（C,H,W）,像素值[0,1]
 ])
 
@@ -17,8 +16,8 @@ tensor_to_pil=transforms.Compose([
     transforms.ToPILImage(),    # tensor转回PIL图像, (C,H,W) -> (H,W,C) 
 ])
 
-# 数据集
-train_dataset=torchvision.datasets.MNIST(root=".",train=True,download=True,transform=pil_to_tensor)
+# 数据集Pytorch Dataset
+train_dataset=torchvision.datasets.MNIST(root=".",train=True,download=True,transform=pil_to_tensor) # 手写数字图像pillow(PIL),对应的数字
 
 if __name__=='__main__':
     # 训练样本的tensor

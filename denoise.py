@@ -49,7 +49,7 @@ if __name__=='__main__':
     # 逐步去噪得到原图
     steps=backward_denoise(model,batch_x_t)
     # 绘制数量
-    num_imgs=10
+    num_imgs=20
     # 绘制还原过程
     plt.figure(figsize=(15,15))
     for b in range(batch_size):

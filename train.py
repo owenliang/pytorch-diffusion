@@ -7,8 +7,8 @@ import torch
 from torch import nn 
 import os 
 
-EPOCH=20
-BATCH_SIZE=250
+EPOCH=200
+BATCH_SIZE=800
 
 dataloader=DataLoader(train_dataset,batch_size=BATCH_SIZE,num_workers=4,persistent_workers=True,shuffle=True)   # 数据加载器
 
