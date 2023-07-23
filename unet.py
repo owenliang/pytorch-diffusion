@@ -62,7 +62,7 @@ class UNet(nn.Module):
         return self.output(x) # 还原通道数
         
 if __name__=='__main__':
-    batch_x=torch.stack((train_dataset[0][0],train_dataset[1][0]),dim=0).to(DEVICE) # 2个图片拼batch, (2,1,96,96)
+    batch_x=torch.stack((train_dataset[0][0],train_dataset[1][0]),dim=0).to(DEVICE) # 2个图片拼batch, (2,1,48,48)
     batch_x=batch_x*2-1 # 像素值调整到[-1,1]之间,以便与高斯噪音值范围匹配
     batch_t=torch.randint(0,T,size=(batch_x.size(0),)).to(DEVICE)  # 每张图片随机生成diffusion步数
     batch_x_t,batch_noise_t=forward_diffusion(batch_x,batch_t)
@@ -70,6 +70,6 @@ if __name__=='__main__':
     print('batch_x_t:',batch_x_t.size())
     print('batch_noise_t:',batch_noise_t.size())
 
-    unet=UNet(batch_x_t.size(1)).to(DEVICE)
+    unet=UNet(img_channel=1).to(DEVICE)
     batch_predict_noise_t=unet(batch_x_t,batch_t)
     print('batch_predict_noise_t:',batch_predict_noise_t.size())
