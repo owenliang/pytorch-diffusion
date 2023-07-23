@@ -19,7 +19,7 @@ def backward_denoise(model,batch_x_t):
     #model.eval()
     with torch.no_grad():
         for t in range(T-1,-1,-1):
-            batch_t=torch.full((batch_x_t.size(0),),t).to(DEVICE)
+            batch_t=torch.full((batch_x_t.size(0),),t).to(DEVICE) #[999,999,....]
             # 预测x_t时刻的噪音
             batch_predict_noise_t=model(batch_x_t,batch_t)
             # 生成t-1时刻的图像
@@ -44,7 +44,7 @@ if __name__=='__main__':
     model=torch.load('model.pt')
     # 生成噪音图
     batch_size=10
-    batch_x_t=torch.randn(size=(batch_size,1,IMG_SIZE,IMG_SIZE))  # (5,1,96,96)
+    batch_x_t=torch.randn(size=(batch_size,1,IMG_SIZE,IMG_SIZE))  # (5,1,48,48)
     # 逐步去噪得到原图
     steps=backward_denoise(model,batch_x_t)
     # 绘制数量
@@ -56,7 +56,7 @@ if __name__=='__main__':
             idx=int(T/num_imgs)*(i+1)
             # 像素值还原到[0,1]
             final_img=(steps[idx][b].to('cpu')+1)/2
-            # tesor转回PIL图
+            # tensor转回PIL图
             final_img=tensor_to_pil(final_img)
             plt.subplot(batch_size,num_imgs,b*num_imgs+i+1)
             plt.imshow(final_img)
