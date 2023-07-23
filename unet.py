@@ -32,7 +32,7 @@ class UNet(nn.Module):
         # 每个decoder conv前放大一倍图像尺寸，缩小一倍通道数
         self.deconvs=nn.ModuleList()
         for i in range(len(channels)-2):
-            self.deconvs.append(nn.ConvTranspose2d(channels[-i-1],channels[-i-2],kernel_size=2,stride=2)) # 不改通道数,尺寸翻倍
+            self.deconvs.append(nn.ConvTranspose2d(channels[-i-1],channels[-i-2],kernel_size=2,stride=2))
 
         # 每个decoder conv block减少一倍通道数
         self.dec_convs=nn.ModuleList()
