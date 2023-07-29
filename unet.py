@@ -7,7 +7,7 @@ from time_position_emb import TimePositionEmbedding
 from conv_block import ConvBlock
 
 class UNet(nn.Module):
-    def __init__(self,img_channel,channels=[64, 128, 256, 512, 1024],time_emb_size=256,qsize=64,vsize=64,fsize=512,cls_emb_size=128):
+    def __init__(self,img_channel,channels=[64, 128, 256, 512, 1024],time_emb_size=256,qsize=16,vsize=16,fsize=32,cls_emb_size=32):
         super().__init__()
 
         channels=[img_channel]+channels
