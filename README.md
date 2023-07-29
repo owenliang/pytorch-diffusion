@@ -1,12 +1,11 @@
 # pytorch-diffusion
 
-手写数字数据集的diffusion图像生成，支持用分类ID引导生成指定数字
+基于mnist手写数字数据集的stable diffusion模型复现
+
+可以输入引导数字，生成对应数字的图片
 
 ## 模型效果
 
+引导生成10张图片，分别对应数字0~9
+
 ![模型效果](stable-inference.png)
-
-
-## TODO
-
-推理有概率生不出来相应的数字，还得研究是什么原因
