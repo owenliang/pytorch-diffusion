@@ -17,7 +17,7 @@ def backward_denoise(model,batch_x_t,batch_cls):
     batch_cls=batch_cls.to(DEVICE)
     
     # 应该是由于BN层mean,std导致的eval效果不好,先不开启了
-    #model.eval()
+    model.eval()
     with torch.no_grad():
         for t in range(T-1,-1,-1):
             batch_t=torch.full((batch_x_t.size(0),),t).to(DEVICE) #[999,999,....]
@@ -47,7 +47,7 @@ if __name__=='__main__':
     # 生成噪音图
     batch_size=10
     batch_x_t=torch.randn(size=(batch_size,1,IMG_SIZE,IMG_SIZE))  # (5,1,48,48)
-    batch_cls=torch.arange(start=0,end=10,dtype=torch.long)   # 引导词
+    batch_cls=torch.arange(start=0,end=10,dtype=torch.long)   # 引导词promot
     # 逐步去噪得到原图
     steps=backward_denoise(model,batch_x_t,batch_cls)
     # 绘制数量
