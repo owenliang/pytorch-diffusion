@@ -16,7 +16,7 @@ def backward_denoise(model,batch_x_t,batch_cls):
     variance=variance.to(DEVICE)
     batch_cls=batch_cls.to(DEVICE)
     
-    # 应该是由于BN层mean,std导致的eval效果不好,先不开启了
+    # BN层的存在，需要eval模式避免推理时跟随batch的数据分布，但是相反训练的时候需要更加充分让它见到各种batch数据分布
     model.eval()
     with torch.no_grad():
         for t in range(T-1,-1,-1):
