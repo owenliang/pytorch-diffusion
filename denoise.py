@@ -3,6 +3,9 @@ from config import *
 from diffusion import *
 import matplotlib.pyplot as plt 
 from dataset import tensor_to_pil
+from lora import LoraLayer
+from torch import nn 
+from lora import inject_lora
 
 def backward_denoise(model,batch_x_t,batch_cls):
     steps=[batch_x_t,]
@@ -43,6 +46,52 @@ def backward_denoise(model,batch_x_t,batch_cls):
 if __name__=='__main__':
     # 加载模型
     model=torch.load('model.pt')
+
+    USE_LORA=True
+
+    if USE_LORA:
+        # 向nn.Linear层注入Lora
+        for name,layer in model.named_modules():
+            name_cols=name.split('.')
+            # 过滤出cross attention使用的linear权重
+            filter_names=['w_q','w_k','w_v']
+            if any(n in name_cols for n in filter_names) and isinstance(layer,nn.Linear):
+                inject_lora(model,name,layer)
+
+        # lora权重的加载
+        try:
+            restore_lora_state=torch.load('lora.pt')
+            # for key in restore_lora_state:
+            #     if 'w_q' in key and 'lora_b' in key:
+            #         print(key, restore_lora_state[key])
+            model.load_state_dict(restore_lora_state,strict=False)
+        except:
+            pass 
+
+        model=model.to(DEVICE)
+
+        # for name,param in model.named_parameters():
+        #     if 'lora_b' in name:
+        #         print(name,param)
+
+        # lora权重合并到主模型
+        for name,layer in model.named_modules():
+            name_cols=name.split('.')
+
+            if isinstance(layer,LoraLayer):
+                children=name_cols[:-1]
+                cur_layer=model 
+                for child in children:
+                    cur_layer=getattr(cur_layer,child)  
+                #print(name,type(layer),layer.lora_b)
+                #print(name,layer.lora_b)
+                lora_weight=(layer.lora_a@layer.lora_b)*layer.alpha/layer.r
+                before_weight=layer.raw_linear.weight.clone()
+                layer.raw_linear.weight=nn.Parameter(layer.raw_linear.weight.add(lora_weight.T)).to(DEVICE)    # 把Lora参数加到base model的linear weight上
+                setattr(cur_layer,name_cols[-1],layer.raw_linear)
+    
+    # 打印模型结构
+    #print(model)
 
     # 生成噪音图
     batch_size=10

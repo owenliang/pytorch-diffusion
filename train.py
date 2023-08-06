@@ -44,10 +44,15 @@ if __name__=='__main__':
             # 优化参数
             optimizer.zero_grad()
             loss.backward()
+            # for name,param in model.named_parameters():
+            #     name_cols=name.split('.')
+            #     if name=='dec_convs.0.crossattn.w_q.weight':
+            #         print(name,param.grad)
             optimizer.step()
             last_loss=loss.item()
             writer.add_scalar('Loss/train', last_loss, n_iter)
             n_iter+=1
+
         print('epoch:{} loss={}'.format(epoch,last_loss))
         torch.save(model,'model.pt.tmp')
         os.replace('model.pt.tmp','model.pt')
