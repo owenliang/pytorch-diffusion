@@ -4,7 +4,6 @@ from diffusion import forward_diffusion
 from config import * 
 import torch 
 from torch import nn
-import math 
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 import os 
@@ -72,24 +71,7 @@ if __name__=='__main__':
             optimizer.step()
             last_loss=loss.item()
             writer.add_scalar('Loss/train', last_loss, n_iter)
-            writer.add_graph(model,(batch_x,batch_t,batch_cls))
             n_iter+=1
-            
-            # 保存训练好的Lora权重
-            lora_state={}
-            for name,param in model.named_parameters():
-                name_cols=name.split('.')
-                filter_names=['lora_a','lora_b']
-                if any(n==name_cols[-1] for n in filter_names):
-                    #print(name,param.size())
-                    lora_state[name]=param
-                if name=='dec_convs.0.crossattn.w_q.lora_b' or name=='dec_convs.0.crossattn.w_q.lora_a':
-                    print(name,param.grad)
-            # for key in lora_state:
-            #     #if 'w_q' in key and 'lora_a' in key:
-            #     if key=='dec_convs.0.crossattn.w_q.lora_a':
-            #         print(key, restore_lora_state[key])
-            
         print('epoch:{} loss={}'.format(epoch,last_loss))
 
         # 保存训练好的Lora权重
@@ -98,9 +80,6 @@ if __name__=='__main__':
             name_cols=name.split('.')
             filter_names=['lora_a','lora_b']
             if any(n==name_cols[-1] for n in filter_names):
-                #print(name,param.size())
                 lora_state[name]=param
-    
-
         torch.save(lora_state,'lora.pt.tmp')
         os.replace('lora.pt.tmp','lora.pt')

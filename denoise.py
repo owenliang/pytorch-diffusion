@@ -61,18 +61,11 @@ if __name__=='__main__':
         # lora权重的加载
         try:
             restore_lora_state=torch.load('lora.pt')
-            # for key in restore_lora_state:
-            #     if 'w_q' in key and 'lora_b' in key:
-            #         print(key, restore_lora_state[key])
             model.load_state_dict(restore_lora_state,strict=False)
         except:
             pass 
 
         model=model.to(DEVICE)
-
-        # for name,param in model.named_parameters():
-        #     if 'lora_b' in name:
-        #         print(name,param)
 
         # lora权重合并到主模型
         for name,layer in model.named_modules():
@@ -83,15 +76,13 @@ if __name__=='__main__':
                 cur_layer=model 
                 for child in children:
                     cur_layer=getattr(cur_layer,child)  
-                #print(name,type(layer),layer.lora_b)
-                #print(name,layer.lora_b)
                 lora_weight=(layer.lora_a@layer.lora_b)*layer.alpha/layer.r
                 before_weight=layer.raw_linear.weight.clone()
                 layer.raw_linear.weight=nn.Parameter(layer.raw_linear.weight.add(lora_weight.T)).to(DEVICE)    # 把Lora参数加到base model的linear weight上
                 setattr(cur_layer,name_cols[-1],layer.raw_linear)
     
     # 打印模型结构
-    #print(model)
+    print(model)
 
     # 生成噪音图
     batch_size=10

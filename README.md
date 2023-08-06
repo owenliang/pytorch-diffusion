@@ -9,3 +9,15 @@
 引导生成10张图片，分别对应数字0~9
 
 ![模型效果](stable-inference.png)
+
+## 训练主模型
+
+```
+python train.py
+```
+
+## Lora微调
+
+```
+python lora_finetune.py
+``

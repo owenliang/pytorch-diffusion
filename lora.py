@@ -1,13 +1,7 @@
-from unet import UNet
-from dataset import train_dataset
-from diffusion import forward_diffusion
 from config import * 
 import torch 
 from torch import nn
 import math 
-from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
-import os 
 
 # Lora实现，封装linear，替换到父module里
 class LoraLayer(nn.Module):
@@ -28,8 +22,6 @@ class LoraLayer(nn.Module):
         return raw_output+lora_output
 
 def inject_lora(model,name,layer):
-    #print(name,layer,layer.in_features,layer.out_features)
-    
     name_cols=name.split('.')
 
     # 逐层下探到linear归属的module
@@ -39,5 +31,5 @@ def inject_lora(model,name,layer):
         cur_layer=getattr(cur_layer,child)
     
     #print(layer==getattr(cur_layer,name_cols[-1]))
-    lora_layer=LoraLayer(layer,layer.in_features,layer.out_features,8,1)
+    lora_layer=LoraLayer(layer,layer.in_features,layer.out_features,LORA_R,LORA_ALPHA)
     setattr(cur_layer,name_cols[-1],lora_layer)
