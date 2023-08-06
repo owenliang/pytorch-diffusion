@@ -48,6 +48,7 @@ if __name__=='__main__':
             last_loss=loss.item()
             writer.add_scalar('Loss/train', last_loss, n_iter)
             n_iter+=1
+
         print('epoch:{} loss={}'.format(epoch,last_loss))
         torch.save(model,'model.pt.tmp')
         os.replace('model.pt.tmp','model.pt')

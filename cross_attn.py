@@ -26,7 +26,7 @@ class CrossAttention(nn.Module):
         # 像素是Query
         Q=self.w_q(x)   # Q: (batch_size,width,height,qsize)
         Q=Q.view(Q.size(0),Q.size(1)*Q.size(2),Q.size(3))   # Q: (batch_size,width*height,qsize)
-        
+
         # 引导分类是Key和Value
         K=self.w_k(cls_emb) # K: (batch_size,qsize)
         K=K.view(K.size(0),K.size(1),1) # K: (batch_size,qsize,1)
@@ -36,6 +36,7 @@ class CrossAttention(nn.Module):
         # 注意力打分矩阵Q*K
         attn=torch.matmul(Q,K)/math.sqrt(Q.size(2)) # attn: (batch_size,width*height,1)
         attn=self.softmax(attn) # attn: (batch_size,width*height,1)
+        # print(attn) # 就一个Key&value，所以Query对其注意力打分总是1分满分
 
         # 注意力层的输出
         Z=torch.matmul(attn,V)    # Z: (batch_size,width*height,vsize)
